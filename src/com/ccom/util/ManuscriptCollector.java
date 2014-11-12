@@ -4,6 +4,7 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 
+import javax.activation.*;
 import javax.mail.*;
 import javax.mail.internet.*;
 
@@ -234,6 +235,7 @@ public class ManuscriptCollector{
     String disposition = mpart.getDisposition();
     if((disposition != null) &&((disposition.equals(Part.ATTACHMENT)) ||(disposition.equals(Part.INLINE)))){
      fileName = mpart.getFileName();
+     fileName=MimeUtility.decodeText(fileName);
      if(fileName.toLowerCase().indexOf("gb2312") != -1){
        fileName = MimeUtility.decodeText(fileName);
      }
@@ -375,6 +377,14 @@ public class ManuscriptCollector{
   SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   Date date_last_max_time=df.parse(last_max_time);
   Date date_current_max_time=date_last_max_time;
+
+  WordExcelProcessor m_wordexcelprocessor=new WordExcelProcessor();
+  if(m_wordexcelprocessor.OpenExcel()==false)
+  {
+	  System.out.println("fileout/来稿登记.xls存在问题，请检查是否处于打开状态.");
+	  bizlogger.error("fileout/来稿登记.xls存在问题，请检查是否处于打开状态.");
+	  return;
+  }
   
   for(int i=0;i<message.length;i++){
 	   pmm = new ManuscriptCollector((MimeMessage)message[i]);
@@ -402,6 +412,54 @@ public class ManuscriptCollector{
 		  bizlogger.info("第["+(i+1)+"]封邮件符合规则,开始解析");
 		  bizlogger.info("第["+(i+1)+"]封邮件来自["+m_sender+"]");
 		  
+		  String [] m_subject_array=m_subject.split("-");
+		  if(m_subject_array.length <5)
+		  {
+			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错,跳过...");
+			  continue;			  
+		  }
+		  String m_name=m_subject_array[1];
+		  String m_title=m_subject_array[2];
+		  String m_workplace=m_subject_array[3];
+		  String m_phone=m_subject_array[4];
+		  
+		  if(m_name==null || m_title == null || m_workplace==null || m_phone==null)
+		  {
+			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错,跳过...");
+			  continue;
+		  }
+		  
+		  int index_number=m_wordexcelprocessor.ProcessExcel(m_sentdate.substring(0,10), m_name, m_title, m_workplace, m_phone,m_sender );
+		  
+		   File dateDir= new File("fileout\\"+m_sentdate.substring(0,10));
+		   if(!dateDir.exists())
+		   {
+				   dateDir.mkdirs();
+		   }
+		   
+		   File nameDir= new File("fileout\\"+m_sentdate.substring(0,10)+"\\"+m_name);
+		   if(!nameDir.exists())
+		   {
+			   nameDir.mkdirs();
+		   }
+		  m_wordexcelprocessor.ProcessWord(m_sentdate.substring(0,10), m_name, m_title, m_phone, m_workplace, m_sender, index_number);
+		  pmm.setAttachPath(nameDir.toString());
+		  pmm.saveAttachMent((Part)message[i]);
+		  
+		  try{
+	          FileWriter fw = new FileWriter(nameDir.toString()+"\\邮件正文.html");
+	          pmm.getMailContent((Part)message[i]);
+	          fw.write("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">"+MimeUtility.decodeText(pmm.getBodyText())+"</head><body></body></html>");
+//	          System.out.println(pmm.getBodyText());
+	          fw.close();
+	            } catch (Exception e) {   
+      e.printStackTrace();   
+  }   
+			SimpleDateFormat dateformat1=new SimpleDateFormat("yyyy月MM日dd日");
+			String today=dateformat1.format(new Date());
+			String m_sentdate2=dateformat1.format(pmm.getSentDate2());
+		  m_wordexcelprocessor.ProcessReplyWord(m_sentdate.substring(0,10),m_sentdate2, m_name, m_title, today);
+		  
 		  bizlogger.info("开始向["+m_sender+"]发送反馈邮件");
 		  MimeMessage sendmessage = new MimeMessage(session);
 		  try {
@@ -416,11 +474,16 @@ public class ManuscriptCollector{
 
 		   // 设置邮件的文本内容
 		   BodyPart contentPart = new MimeBodyPart();
-		   contentPart.setText("稿件已收到");
+		   contentPart.setText("稿件已收到\r\n此邮件为自动发送,请勿回复!");
 		   multipart.addBodyPart(contentPart);
 		   
 		   // 将multipart对象放到message中
 		   sendmessage.setContent(multipart);
+           BodyPart bp = new MimeBodyPart();
+           FileDataSource fileds = new FileDataSource(nameDir.toString()+"\\收稿回复.doc");
+           bp.setDataHandler(new DataHandler(fileds));
+           bp.setFileName(MimeUtility.encodeText(fileds.getName(),"utf-8",null));  // 解决附件名称乱码
+           multipart.addBodyPart(bp);
 		   // 保存邮件
 		   sendmessage.saveChanges();
 		   // 发送邮件
@@ -472,10 +535,13 @@ public class ManuscriptCollector{
 	  }
   
   
-  props.setProperty("last_max_time", df.format(date_current_max_time));  
-//  props.setProperty("last_max_time", "2012-01-01 00:00:00");  
+//  props.setProperty("last_max_time", df.format(date_current_max_time));
+  m_wordexcelprocessor.CloseExcel();
+  props.setProperty("last_max_time", "2012-01-01 00:00:00");  
   props.save(new FileOutputStream("cfg/config.properties"), null);
   folder.close(true);
-  System.out.println("done!");
+  bizlogger.info("本次邮件处理完毕...");
+  System.out.println("\r\nTask Completed!\r\n<press any key to continue>");
+  System.in.read();
  }
 }
