@@ -1,3 +1,6 @@
 eclipse.preferences.version=1
 encoding//cfg/config.properties=UTF-8
 encoding//cfg/log4j.properties=UTF-8
+encoding//src/com/ccom/util/ManuscriptCollector.java=UTF-8
+encoding//src/com/ccom/util/WordExcelProcessor.java=UTF-8
+encoding/<project>=US-ASCII

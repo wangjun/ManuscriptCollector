@@ -1,0 +1,48 @@
+2014-11-26 03:55:56  [ main:2963 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/1stcheck.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 03:55:56  [ main:2968 ] - [ DEBUG ]  Compiling FreeMarker template template/1stcheck.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\1stcheck.ftl
+2014-11-26 03:56:03  [ main:10669 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/reply.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 03:56:03  [ main:10670 ] - [ DEBUG ]  Compiling FreeMarker template template/reply.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\reply.ftl
+2014-11-26 03:56:05  [ main:12154 ] - [ DEBUG ]  template/1stcheck.ftl[zh_CN,utf-8,parsed] using cached since G:\workspace\ManuscriptCollector\template\1stcheck.ftl didn't change.
+2014-11-26 03:56:05  [ main:12171 ] - [ DEBUG ]  template/reply.ftl[zh_CN,utf-8,parsed] cached copy not yet stale; using cached.
+2014-11-26 03:58:29  [ main:2669 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/1stcheck.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 03:58:29  [ main:2671 ] - [ DEBUG ]  Compiling FreeMarker template template/1stcheck.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\1stcheck.ftl
+2014-11-26 03:58:40  [ main:13262 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/reply.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 03:58:40  [ main:13262 ] - [ DEBUG ]  Compiling FreeMarker template template/reply.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\reply.ftl
+2014-11-26 03:58:42  [ main:15306 ] - [ DEBUG ]  template/1stcheck.ftl[zh_CN,utf-8,parsed] using cached since G:\workspace\ManuscriptCollector\template\1stcheck.ftl didn't change.
+2014-11-26 03:58:42  [ main:15328 ] - [ DEBUG ]  template/reply.ftl[zh_CN,utf-8,parsed] cached copy not yet stale; using cached.
+2014-11-26 03:59:31  [ main:2540 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/1stcheck.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 03:59:31  [ main:2543 ] - [ DEBUG ]  Compiling FreeMarker template template/1stcheck.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\1stcheck.ftl
+2014-11-26 03:59:41  [ main:12781 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/reply.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 03:59:41  [ main:12782 ] - [ DEBUG ]  Compiling FreeMarker template template/reply.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\reply.ftl
+2014-11-26 03:59:43  [ main:14683 ] - [ DEBUG ]  template/1stcheck.ftl[zh_CN,utf-8,parsed] using cached since G:\workspace\ManuscriptCollector\template\1stcheck.ftl didn't change.
+2014-11-26 03:59:43  [ main:14702 ] - [ DEBUG ]  template/reply.ftl[zh_CN,utf-8,parsed] cached copy not yet stale; using cached.
+2014-11-26 04:15:32  [ main:3395 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/1stcheck.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:15:32  [ main:3397 ] - [ DEBUG ]  Compiling FreeMarker template template/1stcheck.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\1stcheck.ftl
+2014-11-26 04:15:44  [ main:15474 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/reply.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:15:44  [ main:15474 ] - [ DEBUG ]  Compiling FreeMarker template template/reply.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\reply.ftl
+2014-11-26 04:15:46  [ main:17495 ] - [ DEBUG ]  template/1stcheck.ftl[zh_CN,utf-8,parsed] using cached since G:\workspace\ManuscriptCollector\template\1stcheck.ftl didn't change.
+2014-11-26 04:15:47  [ main:18416 ] - [ DEBUG ]  template/reply.ftl[zh_CN,utf-8,parsed] cached copy not yet stale; using cached.
+2014-11-26 04:17:42  [ main:3059 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/1stcheck.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:17:42  [ main:3061 ] - [ DEBUG ]  Compiling FreeMarker template template/1stcheck.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\1stcheck.ftl
+2014-11-26 04:17:54  [ main:15508 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/reply.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:17:54  [ main:15508 ] - [ DEBUG ]  Compiling FreeMarker template template/reply.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\reply.ftl
+2014-11-26 04:17:56  [ main:17400 ] - [ DEBUG ]  template/1stcheck.ftl[zh_CN,utf-8,parsed] using cached since G:\workspace\ManuscriptCollector\template\1stcheck.ftl didn't change.
+2014-11-26 04:17:56  [ main:17418 ] - [ DEBUG ]  template/reply.ftl[zh_CN,utf-8,parsed] cached copy not yet stale; using cached.
+2014-11-26 04:23:28  [ main:3244 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/1stcheck.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:23:28  [ main:3246 ] - [ DEBUG ]  Compiling FreeMarker template template/1stcheck.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\1stcheck.ftl
+2014-11-26 04:23:39  [ main:14942 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/reply.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:23:39  [ main:14943 ] - [ DEBUG ]  Compiling FreeMarker template template/reply.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\reply.ftl
+2014-11-26 04:23:42  [ main:17196 ] - [ DEBUG ]  template/1stcheck.ftl[zh_CN,utf-8,parsed] using cached since G:\workspace\ManuscriptCollector\template\1stcheck.ftl didn't change.
+2014-11-26 04:23:42  [ main:17213 ] - [ DEBUG ]  template/reply.ftl[zh_CN,utf-8,parsed] cached copy not yet stale; using cached.
+2014-11-26 04:27:39  [ main:3026 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/1stcheck.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:27:39  [ main:3028 ] - [ DEBUG ]  Compiling FreeMarker template template/1stcheck.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\1stcheck.ftl
+2014-11-26 04:27:51  [ main:14994 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/reply.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:27:51  [ main:14994 ] - [ DEBUG ]  Compiling FreeMarker template template/reply.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\reply.ftl
+2014-11-26 04:27:53  [ main:17052 ] - [ DEBUG ]  template/1stcheck.ftl[zh_CN,utf-8,parsed] using cached since G:\workspace\ManuscriptCollector\template\1stcheck.ftl didn't change.
+2014-11-26 04:27:53  [ main:17070 ] - [ DEBUG ]  template/reply.ftl[zh_CN,utf-8,parsed] cached copy not yet stale; using cached.
+2014-11-26 04:30:18  [ main:3465 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/1stcheck.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:30:18  [ main:3469 ] - [ DEBUG ]  Compiling FreeMarker template template/1stcheck.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\1stcheck.ftl
+2014-11-26 04:30:29  [ main:15032 ] - [ DEBUG ]  Could not find template in cache, creating new one; id=[template/reply.ftl[zh_CN,utf-8,parsed] ]
+2014-11-26 04:30:29  [ main:15032 ] - [ DEBUG ]  Compiling FreeMarker template template/reply.ftl[zh_CN,utf-8,parsed]  from G:\workspace\ManuscriptCollector\template\reply.ftl
+2014-11-26 04:30:31  [ main:17141 ] - [ DEBUG ]  template/1stcheck.ftl[zh_CN,utf-8,parsed] using cached since G:\workspace\ManuscriptCollector\template\1stcheck.ftl didn't change.
+2014-11-26 04:30:31  [ main:17158 ] - [ DEBUG ]  template/reply.ftl[zh_CN,utf-8,parsed] cached copy not yet stale; using cached.

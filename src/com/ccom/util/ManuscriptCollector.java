@@ -346,8 +346,9 @@ public class ManuscriptCollector{
   String mail_username = props.get("mail_username").toString();
   String mail_password = props.get("mail_password").toString();
   String last_max_time = props.get("last_max_time").toString();
-  String black_email_list = props.get("black_email_list").toString();
+  String email_black_list = props.get("email_black_list").toString();
   String my_mail_address = props.get("my_mail_address").toString();
+  String auto_reply = props.get("auto_reply").toString();
  
   PropertyConfigurator.configure( "cfg/log4j.properties" );
   syslogger  =  Logger.getLogger("SysLog");
@@ -357,8 +358,9 @@ public class ManuscriptCollector{
   syslogger.info("mail_send_host:"+mail_send_host);
   syslogger.info("mail_username:"+mail_username);
   syslogger.info("mail_password:"+mail_password);
-  syslogger.info("black_email_list:"+black_email_list);
+  syslogger.info("email_black_list:"+email_black_list);
   syslogger.info("my_mail_address:"+my_mail_address);
+  syslogger.info("auto_reply:"+auto_reply);
   
   Properties props2 = new Properties();
   props2.put("mail.smtp.host", mail_send_host);
@@ -371,7 +373,8 @@ public class ManuscriptCollector{
   folder.open(Folder.READ_WRITE);
   Message message[] = folder.getMessages();
 //  System.out.println("Messages's length: "+message.length);
-  bizlogger.info("邮箱中共有["+message.length+"]封邮件");
+  int len_message=message.length;
+  bizlogger.info("邮箱中共有["+len_message+"]封邮件");
   bizlogger.info("上次轮询最大时间为:"+last_max_time);
   ManuscriptCollector pmm = null;
   SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -379,18 +382,36 @@ public class ManuscriptCollector{
   Date date_current_max_time=date_last_max_time;
 
   WordExcelProcessor m_wordexcelprocessor=new WordExcelProcessor();
+  m_wordexcelprocessor.BackUpExcel();
   if(m_wordexcelprocessor.OpenExcel()==false)
   {
 	  System.out.println("fileout/来稿登记.xls存在问题，请检查是否处于打开状态.");
 	  bizlogger.error("fileout/来稿登记.xls存在问题，请检查是否处于打开状态.");
 	  return;
   }
+  m_wordexcelprocessor.CloseExcel();
   
+  if(m_wordexcelprocessor.OpenExcel2()==false)
+  {
+	  System.out.println("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
+	  bizlogger.error("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
+	  return;
+  }
+  m_wordexcelprocessor.CloseExcel2();
+  
+  System.out.print("Task Progress:");
   for(int i=0;i<message.length;i++){
+	  int i_progress=(i+1)*100/len_message;
+	  System.out.print(i_progress+"%");
+	  for(int j=0;j<=String.valueOf(i_progress).length();j++)
+	  {
+		  System.out.print("\b");
+	  }
+	  
 	   pmm = new ManuscriptCollector((MimeMessage)message[i]);
 		  bizlogger.info("开始处理第["+(i+1)+"]封邮件,发送时间为["+pmm.getSentDate()+"]...");
 		  String m_sender=pmm.getFrom();
-		  if(black_email_list.contains(m_sender))
+		  if(email_black_list.contains(m_sender))
 		  {
 			  bizlogger.info("第["+(i+1)+"]封邮件发件人为["+m_sender+"],为垃圾邮件,删除,跳过...");
 			  pmm.DeleteMessage();
@@ -415,7 +436,15 @@ public class ManuscriptCollector{
 		  String [] m_subject_array=m_subject.split("-");
 		  if(m_subject_array.length <5)
 		  {
-			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错,跳过...");
+			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错,记入需要人工核对邮件列表,跳过...");
+			  if(m_wordexcelprocessor.OpenExcel2()==false)
+			  {
+				  System.out.println("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
+				  bizlogger.error("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
+				  return;
+			  }
+			  m_wordexcelprocessor.ProcessExcel2(m_sentdate.substring(0,10),m_sender,m_subject);
+			  m_wordexcelprocessor.CloseExcel2();
 			  continue;			  
 		  }
 		  String m_name=m_subject_array[1];
@@ -425,11 +454,26 @@ public class ManuscriptCollector{
 		  
 		  if(m_name==null || m_title == null || m_workplace==null || m_phone==null)
 		  {
-			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错,跳过...");
+			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错,记入需要人工核对邮件列表,跳过...");
+			  if(m_wordexcelprocessor.OpenExcel2()==false)
+			  {
+				  System.out.println("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
+				  bizlogger.error("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
+				  return;
+			  }
+			  m_wordexcelprocessor.ProcessExcel2(m_sentdate.substring(0,10),m_sender,m_subject);
+			  m_wordexcelprocessor.CloseExcel2();			  
 			  continue;
 		  }
 		  
+		  if(m_wordexcelprocessor.OpenExcel()==false)
+		  {
+			  System.out.println("fileout/来稿登记.xls存在问题，请检查是否处于打开状态.");
+			  bizlogger.error("fileout/来稿登记.xls存在问题，请检查是否处于打开状态.");
+			  return;
+		  }
 		  int index_number=m_wordexcelprocessor.ProcessExcel(m_sentdate.substring(0,10), m_name, m_title, m_workplace, m_phone,m_sender );
+		  m_wordexcelprocessor.CloseExcel();
 		  
 		   File dateDir= new File("fileout\\"+m_sentdate.substring(0,10));
 		   if(!dateDir.exists())
@@ -460,6 +504,7 @@ public class ManuscriptCollector{
 			String m_sentdate2=dateformat1.format(pmm.getSentDate2());
 		  m_wordexcelprocessor.ProcessReplyWord(m_sentdate.substring(0,10),m_sentdate2, m_name, m_title, today);
 		  
+		  if(auto_reply.compareTo("yes")==0){
 		  bizlogger.info("开始向["+m_sender+"]发送反馈邮件");
 		  MimeMessage sendmessage = new MimeMessage(session);
 		  try {
@@ -496,48 +541,29 @@ public class ManuscriptCollector{
 		     } catch (Exception e) {
 		   e.printStackTrace();
 		  }
+		  }
+		  else
+			  bizlogger.info("auto_reply不为yes，不向["+m_sender+"]发送反馈邮件");
 	  }
 	  else
 	  {
 		  bizlogger.info("第["+(i+1)+"]封邮件不符合规则,记入需要人工核对邮件列表,跳过...");
+		  if(m_wordexcelprocessor.OpenExcel2()==false)
+		  {
+			  System.out.println("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
+			  bizlogger.error("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
+			  return;
+		  }
+		  m_wordexcelprocessor.ProcessExcel2(m_sentdate.substring(0,10),m_sender,m_subject);
+		  m_wordexcelprocessor.CloseExcel2();
 		  continue;
 	  }
-
-	//   System.out.println("Message "+i+" replysign: "+pmm.getReplySign());
-	//   System.out.println("Message "+i+" hasRead: "+pmm.isNew());
-	//   System.out.println("Message "+i+"  containAttachment: "+pmm.isContainAttach((Part)message[i]));
-	//   System.out.println("Message "+i+" form: "+pmm.getFrom());
-	//   System.out.println("Message "+i+" to: "+pmm.getMailAddress("to"));
-	//   System.out.println("Message "+i+" cc: "+pmm.getMailAddress("cc"));
-	//   System.out.println("Message "+i+" bcc: "+pmm.getMailAddress("bcc"));
-	//   pmm.setDateFormat("yy年MM月dd日 HH:mm");
-	//   System.out.println("Message "+i+" sentdate: "+pmm.getSentDate());
-	//   System.out.println("Message "+i+" Message-ID: "+pmm.getMessageId());
-	//   pmm.getMailContent((Part)message[i]);
-	//   System.out.println("Message "+i+" bodycontent: \r\n"+pmm.getBodyText());
-	/* 
-	   if(pmm.isContainAttach((Part)message[i])){
-	   File dateDir= new File("2014-10-30");
-	   if(!dateDir.exists())
-	   {
-			   dateDir.mkdirs();
-	   }   
-	   File AttachDir= new File("2014-10-30\\"+pmm.getFrom());
-	   if(!AttachDir.exists())
-	   {
-		   AttachDir.mkdirs();
-	   }
-	   pmm.setAttachPath(AttachDir.toString());
-	   pmm.saveAttachMent((Part)message[i]);
-	   }*/
 		  bizlogger.info("第["+(i+1)+"]封邮件处理完毕...");
-
 	  }
   
   
-//  props.setProperty("last_max_time", df.format(date_current_max_time));
-  m_wordexcelprocessor.CloseExcel();
-  props.setProperty("last_max_time", "2012-01-01 00:00:00");  
+  props.setProperty("last_max_time", df.format(date_current_max_time));
+//  props.setProperty("last_max_time", "2012-01-01 00:00:00");  
   props.save(new FileOutputStream("cfg/config.properties"), null);
   folder.close(true);
   bizlogger.info("本次邮件处理完毕...");

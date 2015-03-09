@@ -14,9 +14,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +36,11 @@ public class WordExcelProcessor {
 
 /** Excel 文件要存放的位置，假定在E盘Test目录下*/
 
-public static String outputExcel="fileout/来稿登记.xls";
-private HSSFWorkbook workbook;
-private HSSFSheet sheet;
-private FileOutputStream fileOut;
+public static String outputExcel="fileout/来稿登记.xls",
+					 outputExcel2="fileout/其他邮件登记.xls";
+private HSSFWorkbook workbook,workbook2;
+private HSSFSheet sheet,sheet2;
+private FileOutputStream fileOut,fileOut2;
 private Configuration configuration = null;
 public Logger bizlogger;
 public Logger syslogger;
@@ -168,6 +172,34 @@ try {
 return true;
 }
 
+public boolean OpenExcel2(){
+
+try{
+
+// 创建新的Excel 工作簿
+workbook2 = new HSSFWorkbook(new FileInputStream(outputExcel2));
+
+// 在Excel工作簿中建一工作表，其名为缺省值
+// 如要新建一名为"model"的工作表，其语句为：
+// HSSFSheet sheet = workbook.createSheet("model");
+
+//HSSFSheet sheet = workbook.createSheet("hhh");
+sheet2 = workbook2.getSheetAt(0);
+}catch(Exception e) {
+System.out.println("已运行 xlCreate() : " + e );
+}
+
+// 新建一输出文件流
+try {
+	fileOut2 = new FileOutputStream(outputExcel2);
+} catch (FileNotFoundException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+	return false;
+}
+return true;
+}
+
 public void CloseExcel()
 {
 	// 操作结束，关闭文件
@@ -180,6 +212,20 @@ public void CloseExcel()
 		e.printStackTrace();
 	}
 }
+
+public void CloseExcel2()
+{
+	// 操作结束，关闭文件
+	try {
+		workbook2.write(fileOut2);
+		fileOut2.flush();
+		fileOut2.close();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+}
+
 public int ProcessExcel(String sent_time,String name,String title,String workplace,String phone,String email){
 	
 	int index_number=sheet.getLastRowNum()+1;
@@ -213,12 +259,98 @@ public int ProcessExcel(String sent_time,String name,String title,String workpla
 	cell = row.createCell((short) 5);
 	cell.setCellValue(email);
 	
+	SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	String rec_time=df.format(new Date());
+	cell = row.createCell((short) 7);
+	cell.setCellValue(rec_time);
+	
 	return index_number+1;
 
 }
 
+public void ProcessExcel2(String sent_time,String email,String subject){
+	
+	int index_number=sheet2.getLastRowNum()+1;
+	// 在索引0的位置创建行（最顶端的行）
+	HSSFRow row = sheet2.createRow(index_number);
+
+	//在索引0的位置创建单元格（左上端）
+	HSSFCell cell = row.createCell((short) 0);
 
 
+	// 定义单元格为字符串类型
+	cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+
+
+	// 在单元格中输入一些内容
+	cell.setCellValue(sent_time);
+
+	cell = row.createCell((short) 1);
+	cell.setCellValue(email);
+
+	cell = row.createCell((short) 2);
+	cell.setCellValue(subject);
+	
+	SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	String rec_time=df.format(new Date());
+	cell = row.createCell((short) 3);
+	cell.setCellValue(rec_time);
+
+}
+
+public void BackUpExcel()
+{
+	SimpleDateFormat dateformat1=new SimpleDateFormat("yyyy-MM-dd");
+	String str_dir=dateformat1.format(new Date());
+	File dateDir= new File("backup\\"+str_dir);
+	if(!dateDir.exists())
+		{
+		dateDir.mkdirs();
+		}
+	 try { 
+         int bytesum = 0; 
+         int byteread = 0; 
+         File oldfile = new File("fileout\\来稿登记.xls"); 
+         if (oldfile.exists()) { //文件存在时 
+             InputStream inStream = new FileInputStream(oldfile); //读入原文件 
+             FileOutputStream fs = new FileOutputStream(dateDir.toString()+"\\来稿登记.xls"); 
+             byte[] buffer = new byte[1444]; 
+             while ( (byteread = inStream.read(buffer)) != -1) { 
+                 bytesum += byteread; //字节数 文件大小 
+//                 System.out.println(bytesum); 
+                 fs.write(buffer, 0, byteread); 
+             } 
+             inStream.close(); 
+         } 
+     } 
+     catch (Exception e) { 
+         System.out.println("备份\"fileout/来稿登记.xls\"存在问题，请检查是否处于打开状态."); 
+         e.printStackTrace(); 
+
+     } 
+
+try { 
+         int bytesum = 0; 
+         int byteread = 0; 
+         File oldfile = new File("fileout\\其他邮件登记.xls"); 
+         if (oldfile.exists()) { //文件存在时 
+             InputStream inStream = new FileInputStream(oldfile); //读入原文件 
+             FileOutputStream fs = new FileOutputStream(dateDir.toString()+"\\其他邮件登记.xls"); 
+             byte[] buffer = new byte[1444]; 
+             while ( (byteread = inStream.read(buffer)) != -1) { 
+                 bytesum += byteread; //字节数 文件大小 
+//                 System.out.println(bytesum); 
+                 fs.write(buffer, 0, byteread); 
+             } 
+             inStream.close(); 
+         } 
+     } 
+     catch (Exception e) { 
+         System.out.println("备份\"fileout/其他邮件登记.xls\"存在问题，请检查是否处于打开状态."); 
+         e.printStackTrace(); 
+
+     } 
+}
 
 public static void main(String args[]) throws InterruptedException{
 //	ProcessExcel();
