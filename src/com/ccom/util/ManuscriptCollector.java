@@ -433,7 +433,7 @@ public class ManuscriptCollector{
 		  bizlogger.info("第["+(i+1)+"]封邮件符合规则,开始解析");
 		  bizlogger.info("第["+(i+1)+"]封邮件来自["+m_sender+"]");
 		  
-		  String [] m_subject_array=m_subject.split("-");
+		  String [] m_subject_array=m_subject.split("\\*");
 		  if(m_subject_array.length <5)
 		  {
 			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错,记入需要人工核对邮件列表,跳过...");
@@ -445,6 +445,39 @@ public class ManuscriptCollector{
 			  }
 			  m_wordexcelprocessor.ProcessExcel2(m_sentdate.substring(0,10),m_sender,m_subject);
 			  m_wordexcelprocessor.CloseExcel2();
+			  
+			  bizlogger.info("开始向["+m_sender+"]发送格式要求提醒邮件");
+			  MimeMessage sendmessage2 = new MimeMessage(session);
+			  try {
+			   // 加载发件人地址
+				  sendmessage2.setFrom(new InternetAddress(my_mail_address));
+			   // 加载收件人地址
+				  sendmessage2.addRecipients(Message.RecipientType.TO, m_sender);
+			   // 加载标题
+				  sendmessage2.setSubject("请您按照指定格式重新投稿");
+			   // 向multipart对象中添加邮件的各个部分内容，包括文本内容和附件
+			   Multipart multipart2 = new MimeMultipart("related");
+
+			   // 设置邮件的文本内容
+			   BodyPart contentPart2 = new MimeBodyPart();
+//			   contentPart2.setText("亲爱的读者:\n\t您好！\n\t目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您务必按照以下格式要求再投一遍，谢谢您的配合！\n\t格式要求：\n\t1）投稿邮件主题为：[投稿]*作者姓名*篇名*单位名称*移动电话\n\t例如：[投稿]*小明*音乐研究*中央音乐学院*13800000000\n\t2）稿件请使用附件\n\t3）请勿重复投稿");
+			   contentPart2.setDataHandler(new DataHandler("亲爱的读者:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您好！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您<font color=red>务必</font>按照以下格式要求再投一遍，感谢您的配合！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;格式要求：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1）投稿邮件主题为：<font color=red>[投稿]*作者姓名*篇名*单位名称*移动电话</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;中间以*间隔，并<font color=red>确认在作者姓名、篇名、单位名称、移动电话信息中不再出现*字符</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;例如：<font color=green>[投稿]*小明*音乐研究*中央音乐学院*13800000000</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2）稿件请添加为附件<br><br>若您之前发送的邮件不是投稿邮件，请忽略此邮件，对您造成的困扰深感抱歉!","text/html;charset=GBK"));
+			   multipart2.addBodyPart(contentPart2);
+			   
+			   // 将multipart对象放到message中
+			   sendmessage2.setContent(multipart2);
+			   sendmessage2.saveChanges();
+			   // 发送邮件
+			   Transport transport2 = session.getTransport("smtp");
+			   // 连接服务器的邮箱
+			   transport2.connect(mail_send_host, mail_username, mail_password);
+			   // 把邮件发送出去
+			   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
+			   transport2.close();
+			     } catch (Exception e) {
+			   e.printStackTrace();
+			  }
+			  
 			  continue;			  
 		  }
 		  String m_name=m_subject_array[1];
@@ -519,7 +552,7 @@ public class ManuscriptCollector{
 
 		   // 设置邮件的文本内容
 		   BodyPart contentPart = new MimeBodyPart();
-		   contentPart.setText("稿件已收到\r\n此邮件为自动发送,请勿回复!");
+		   contentPart.setText("您的稿件已收到，请勿重复投稿!\r\n此邮件为系统自动发送,请勿回复!\n感谢您的配合！");
 		   multipart.addBodyPart(contentPart);
 		   
 		   // 将multipart对象放到message中
@@ -556,6 +589,39 @@ public class ManuscriptCollector{
 		  }
 		  m_wordexcelprocessor.ProcessExcel2(m_sentdate.substring(0,10),m_sender,m_subject);
 		  m_wordexcelprocessor.CloseExcel2();
+		  
+		  bizlogger.info("开始向["+m_sender+"]发送格式要求提醒邮件");
+		  MimeMessage sendmessage2 = new MimeMessage(session);
+		  try {
+		   // 加载发件人地址
+			  sendmessage2.setFrom(new InternetAddress(my_mail_address));
+		   // 加载收件人地址
+			  sendmessage2.addRecipients(Message.RecipientType.TO, m_sender);
+		   // 加载标题
+			  sendmessage2.setSubject("请您按照指定格式重新投稿");
+		   // 向multipart对象中添加邮件的各个部分内容，包括文本内容和附件
+		   Multipart multipart2 = new MimeMultipart("related");
+
+		   // 设置邮件的文本内容
+		   BodyPart contentPart2 = new MimeBodyPart();
+//		   contentPart2.setText("亲爱的读者:\n\t您好！\n\t目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您务必按照以下格式要求再投一遍，谢谢您的配合！\n\t格式要求：\n\t1）投稿邮件主题为：[投稿]*作者姓名*篇名*单位名称*移动电话\n\t例如：[投稿]*小明*音乐研究*中央音乐学院*13800000000\n\t2）稿件请使用附件\n\t3）请勿重复投稿");
+		   contentPart2.setDataHandler(new DataHandler("亲爱的读者:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您好！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您<font color=red>务必</font>按照以下格式要求再投一遍，感谢您的配合！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;格式要求：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1）投稿邮件主题为：<font color=red>[投稿]*作者姓名*篇名*单位名称*移动电话</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;中间以*间隔，并<font color=red>确认在作者姓名、篇名、单位名称、移动电话信息中不再出现*字符</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;例如：<font color=green>[投稿]*小明*音乐研究*中央音乐学院*13800000000</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2）稿件请添加为附件<br><br>若您之前发送的邮件不是投稿邮件，请忽略此邮件，对您造成的困扰深感抱歉!","text/html;charset=GBK"));
+		   multipart2.addBodyPart(contentPart2);
+		   
+		   // 将multipart对象放到message中
+		   sendmessage2.setContent(multipart2);
+		   sendmessage2.saveChanges();
+		   // 发送邮件
+		   Transport transport2 = session.getTransport("smtp");
+		   // 连接服务器的邮箱
+		   transport2.connect(mail_send_host, mail_username, mail_password);
+		   // 把邮件发送出去
+		   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
+		   transport2.close();
+		     } catch (Exception e) {
+		   e.printStackTrace();
+		  }
+		  
 		  continue;
 	  }
 		  bizlogger.info("第["+(i+1)+"]封邮件处理完毕...");

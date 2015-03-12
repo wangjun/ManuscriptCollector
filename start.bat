@@ -9,5 +9,5 @@ set /p confirm=
 if %confirm%==y (
 cls
 echo 准备启动工具...
-java -Dfile.encoding=UTF-8 -jar ManuscriptCollector.jar
+"jre7/bin/java.exe" -Dfile.encoding=UTF-8 -jar ManuscriptCollector.jar
 )
