@@ -350,6 +350,7 @@ public class ManuscriptCollector{
   String email_black_list = props.get("email_black_list").toString();
   String my_mail_address = props.get("my_mail_address").toString();
   String auto_reply = props.get("auto_reply").toString();
+  String no_auto_reply_list = props.get("no_auto_reply_list").toString();
  
   PropertyConfigurator.configure( "cfg/log4j.properties" );
   syslogger  =  Logger.getLogger("SysLog");
@@ -362,6 +363,7 @@ public class ManuscriptCollector{
   syslogger.info("email_black_list:"+email_black_list);
   syslogger.info("my_mail_address:"+my_mail_address);
   syslogger.info("auto_reply:"+auto_reply);
+  syslogger.info("no_auto_reply_list:"+no_auto_reply_list);
   
   Properties props2 = new Properties();
   props2.put("mail.smtp.host", mail_send_host);
@@ -428,8 +430,9 @@ public class ManuscriptCollector{
 	       date_current_max_time=pmm.getSentDate2();		  
 	  bizlogger.info("第["+(i+1)+"]封邮件发送时间["+m_sentdate+"]大于上次轮询时间["+last_max_time+"],开始处理");
 	  String m_subject=pmm.getSubject();
+	  boolean NeedToNotifyGS=false;
 	  bizlogger.info("第["+(i+1)+"]封邮件主题为["+m_subject+"]");
-	  if(m_subject.startsWith("[投稿]"))
+	  if(m_subject.startsWith("[投稿]") || m_subject.startsWith("【投稿】"))
 	  {
 		  bizlogger.info("第["+(i+1)+"]封邮件符合规则,开始解析");
 		  bizlogger.info("第["+(i+1)+"]封邮件来自["+m_sender+"]");
@@ -444,9 +447,12 @@ public class ManuscriptCollector{
 				  bizlogger.error("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
 				  return;
 			  }
+			  NeedToNotifyGS= !m_wordexcelprocessor.SearchExcel2(m_sender);
+			  bizlogger.info(m_sender+"在excel2里的登记状态为:"+!NeedToNotifyGS);
 			  m_wordexcelprocessor.ProcessExcel2(m_sentdate.substring(0,10),m_sender,m_subject);
 			  m_wordexcelprocessor.CloseExcel2();
 			  
+			  if(no_auto_reply_list.contains(m_sender)==false && NeedToNotifyGS==true){
 			  bizlogger.info("开始向["+m_sender+"]发送格式要求提醒邮件");
 			  MimeMessage sendmessage2 = new MimeMessage(session);
 			  try {
@@ -462,7 +468,7 @@ public class ManuscriptCollector{
 			   // 设置邮件的文本内容
 			   BodyPart contentPart2 = new MimeBodyPart();
 //			   contentPart2.setText("亲爱的读者:\n\t您好！\n\t目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您务必按照以下格式要求再投一遍，谢谢您的配合！\n\t格式要求：\n\t1）投稿邮件主题为：[投稿]*作者姓名*篇名*单位名称*移动电话\n\t例如：[投稿]*小明*音乐研究*中央音乐学院*13800000000\n\t2）稿件请使用附件\n\t3）请勿重复投稿");
-			   contentPart2.setDataHandler(new DataHandler("亲爱的读者:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您好！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您<font color=red>务必</font>按照以下格式要求再投一遍，感谢您的配合！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;格式要求：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1）投稿邮件主题为：<font color=red>[投稿]*作者姓名*篇名*单位名称*移动电话</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;中间以*间隔，并<font color=red>确认在作者姓名、篇名、单位名称、移动电话信息中不再出现*字符</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;例如：<font color=green>[投稿]*小明*音乐研究*中央音乐学院*13800000000</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2）稿件请添加为附件<br><br>若您之前发送的邮件不是投稿邮件，请忽略此邮件，对您造成的困扰深感抱歉!","text/html;charset=GBK"));
+			   contentPart2.setDataHandler(new DataHandler("亲爱的作者:您好！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您<font color=red>务必</font>按照以下格式要求再投一遍，感谢您的配合！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;格式要求：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1）投稿邮件主题为：<font color=red>[投稿]*作者姓名*篇名*单位名称*移动电话</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;请注意:[投稿]的方括号为西文字符，中间以键盘上*(shift + 8 键)字符间隔，并确认在作者姓名、篇名、单位名称、移动电话信息中不再出现*字符;例如：<font color=green>[投稿]*小明*音乐研究*中央音乐学院*13800000000</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2）稿件请添加为附件<br><br><b>若您之前发送的邮件不是投稿邮件，请忽略此邮件；若您已收到我刊的收稿通知（有登记号），请不要再重复投稿！谢谢！</b>","text/html;charset=GBK"));
 			   multipart2.addBodyPart(contentPart2);
 			   
 			   // 将multipart对象放到message中
@@ -478,7 +484,7 @@ public class ManuscriptCollector{
 			     } catch (Exception e) {
 			   e.printStackTrace();
 			  }
-			  
+		  }
 			  continue;			  
 		  }
 		  String m_name=m_subject_array[1];
@@ -588,9 +594,12 @@ public class ManuscriptCollector{
 			  bizlogger.error("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
 			  return;
 		  }
+		  NeedToNotifyGS= !m_wordexcelprocessor.SearchExcel2(m_sender);
+		  bizlogger.info(m_sender+"在excel2里的登记状态为:"+!NeedToNotifyGS);
 		  m_wordexcelprocessor.ProcessExcel2(m_sentdate.substring(0,10),m_sender,m_subject);
 		  m_wordexcelprocessor.CloseExcel2();
 		  
+		  if(no_auto_reply_list.contains(m_sender)==false && NeedToNotifyGS==true){
 		  bizlogger.info("开始向["+m_sender+"]发送格式要求提醒邮件");
 		  MimeMessage sendmessage2 = new MimeMessage(session);
 		  try {
@@ -606,7 +615,7 @@ public class ManuscriptCollector{
 		   // 设置邮件的文本内容
 		   BodyPart contentPart2 = new MimeBodyPart();
 //		   contentPart2.setText("亲爱的读者:\n\t您好！\n\t目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您务必按照以下格式要求再投一遍，谢谢您的配合！\n\t格式要求：\n\t1）投稿邮件主题为：[投稿]*作者姓名*篇名*单位名称*移动电话\n\t例如：[投稿]*小明*音乐研究*中央音乐学院*13800000000\n\t2）稿件请使用附件\n\t3）请勿重复投稿");
-		   contentPart2.setDataHandler(new DataHandler("亲爱的读者:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您好！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您<font color=red>务必</font>按照以下格式要求再投一遍，感谢您的配合！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;格式要求：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1）投稿邮件主题为：<font color=red>[投稿]*作者姓名*篇名*单位名称*移动电话</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;中间以*间隔，并<font color=red>确认在作者姓名、篇名、单位名称、移动电话信息中不再出现*字符</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;例如：<font color=green>[投稿]*小明*音乐研究*中央音乐学院*13800000000</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2）稿件请添加为附件<br><br>若您之前发送的邮件不是投稿邮件，请忽略此邮件，对您造成的困扰深感抱歉!","text/html;charset=GBK"));
+		   contentPart2.setDataHandler(new DataHandler("亲爱的作者:您好！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;目前我刊采用自动登记系统，为了保证您的投稿能及时审阅，请您<font color=red>务必</font>按照以下格式要求再投一遍，感谢您的配合！<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;格式要求：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1）投稿邮件主题为：<font color=red>[投稿]*作者姓名*篇名*单位名称*移动电话</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;请注意:[投稿]的方括号为西文字符，中间以键盘上*(shift + 8 键)字符间隔，并确认在作者姓名、篇名、单位名称、移动电话信息中不再出现*字符;例如：<font color=green>[投稿]*小明*音乐研究*中央音乐学院*13800000000</font><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2）稿件请添加为附件<br><br><b>若您之前发送的邮件不是投稿邮件，请忽略此邮件；若您已收到我刊的收稿通知（有登记号），请不要再重复投稿！谢谢！</b>","text/html;charset=GBK"));
 		   multipart2.addBodyPart(contentPart2);
 		   
 		   // 将multipart对象放到message中
@@ -621,6 +630,7 @@ public class ManuscriptCollector{
 		   transport2.close();
 		     } catch (Exception e) {
 		   e.printStackTrace();
+		  }
 		  }
 		  
 		  continue;

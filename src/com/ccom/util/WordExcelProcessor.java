@@ -352,6 +352,26 @@ try {
      } 
 }
 
+public boolean SearchExcel2(String keyword){
+	boolean isFound=false;
+	
+	int index_number=sheet2.getLastRowNum();
+	// 在索引0的位置创建行（最顶端的行）
+	
+	for(int i=0 ;i<index_number;i++)
+	{
+		HSSFRow row = sheet2.getRow(i);
+		HSSFCell cell = row.getCell((short) 1);
+		if(cell.getStringCellValue().compareTo(keyword)==0)
+		{
+			isFound=true;
+			break;
+		}
+	}
+	
+	return isFound;
+}
+
 public static void main(String args[]) throws InterruptedException{
 //	ProcessExcel();
 	
