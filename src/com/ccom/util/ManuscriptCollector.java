@@ -235,6 +235,7 @@ public class ManuscriptCollector{
     String disposition = mpart.getDisposition();
     if((disposition != null) &&((disposition.equals(Part.ATTACHMENT)) ||(disposition.equals(Part.INLINE)))){
      fileName = mpart.getFileName();
+     if(fileName==null) continue;
      fileName=MimeUtility.decodeText(fileName);
      if(fileName.toLowerCase().indexOf("gb2312") != -1){
        fileName = MimeUtility.decodeText(fileName);
@@ -470,9 +471,9 @@ public class ManuscriptCollector{
 			   // 发送邮件
 			   Transport transport2 = session.getTransport("smtp");
 			   // 连接服务器的邮箱
-			   transport2.connect(mail_send_host, mail_username, mail_password);
+//			   transport2.connect(mail_send_host, mail_username, mail_password);
 			   // 把邮件发送出去
-			   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
+//			   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
 			   transport2.close();
 			     } catch (Exception e) {
 			   e.printStackTrace();
@@ -567,9 +568,9 @@ public class ManuscriptCollector{
 		   // 发送邮件
 		   Transport transport = session.getTransport("smtp");
 		   // 连接服务器的邮箱
-		   transport.connect(mail_send_host, mail_username, mail_password);
+//		   transport.connect(mail_send_host, mail_username, mail_password);
 		   // 把邮件发送出去
-		   transport.sendMessage(sendmessage, sendmessage.getAllRecipients());
+//		   transport.sendMessage(sendmessage, sendmessage.getAllRecipients());
 		   transport.close();
 		     } catch (Exception e) {
 		   e.printStackTrace();
@@ -614,9 +615,9 @@ public class ManuscriptCollector{
 		   // 发送邮件
 		   Transport transport2 = session.getTransport("smtp");
 		   // 连接服务器的邮箱
-		   transport2.connect(mail_send_host, mail_username, mail_password);
+//		   transport2.connect(mail_send_host, mail_username, mail_password);
 		   // 把邮件发送出去
-		   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
+//		   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
 		   transport2.close();
 		     } catch (Exception e) {
 		   e.printStackTrace();
