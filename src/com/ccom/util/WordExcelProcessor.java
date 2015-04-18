@@ -70,12 +70,13 @@ public WordExcelProcessor() {
 	  dataMap.put("WORKPLACE", workplace);
   }
 
- private void getReplyData(Map<String,Object> dataMap,String sent_time,String name,String title,String today)
+ private void getReplyData(Map<String,Object> dataMap,String sent_time,String name,String title,String today,String index_number)
  {
 	  dataMap.put("TITLE", title);
 	  dataMap.put("NAME", name);
 	  dataMap.put("SENTTIME", sent_time);
 	  dataMap.put("TODAY", today);
+	  dataMap.put("INDEX", index_number);
  } 
  
 public void ProcessWord(String sent_time,String name,String title,String phone,String workplace,String email,int index_number){
@@ -111,11 +112,11 @@ public void ProcessWord(String sent_time,String name,String title,String phone,S
 	}
 }
 
-public void ProcessReplyWord(String sent_time,String sent_time2,String name,String title,String today){
+public void ProcessReplyWord(String sent_time,String sent_time2,String name,String title,String today,String index_number){
 
 	//要填入模本的数据文件
 	Map<String,Object> dataMap=new HashMap<String,Object>();
-	getReplyData(dataMap,sent_time2,name,title,today);
+	getReplyData(dataMap,sent_time2,name,title,today,index_number);
 	//设置模本装置方法和路径,FreeMarker支持多种模板装载方法。可以重servlet，classpath，数据库装载，
 	//这里我们的模板是放在com.havenliu.document.template包下面
 //	configuration.setClassForTemplateLoading(this.getClass(), "/com/mail/autoreceiver/template");
@@ -355,14 +356,36 @@ try {
 public boolean SearchExcel2(String keyword){
 	boolean isFound=false;
 	
-	int index_number=sheet2.getLastRowNum();
+	int rowCount=sheet2.getLastRowNum();
 	// 在索引0的位置创建行（最顶端的行）
 	
-	for(int i=0 ;i<index_number;i++)
+	for(int i=0 ;i<=rowCount;i++)
 	{
 		HSSFRow row = sheet2.getRow(i);
 		HSSFCell cell = row.getCell((short) 1);
 		if(cell.getStringCellValue().compareTo(keyword)==0)
+		{
+			isFound=true;
+			break;
+		}
+	}
+	
+	return isFound;
+}
+
+public boolean SearchRepeatArticle(String article_author,String article_title){
+	boolean isFound=false;
+	int rowCount=sheet.getLastRowNum();
+	// 在索引0的位置创建行（最顶端的行）
+	
+	for(int i=rowCount;i>=0;i--)
+	{
+		HSSFRow row = sheet.getRow(i);
+		HSSFCell cell = row.getCell((short) 1);
+		HSSFCell cell2 = row.getCell((short) 2);
+		if(cell ==null || cell2 ==null)
+			continue;
+		if(cell.getStringCellValue().compareTo(article_author)==0 && cell2.getStringCellValue().compareTo(article_title)==0)
 		{
 			isFound=true;
 			break;

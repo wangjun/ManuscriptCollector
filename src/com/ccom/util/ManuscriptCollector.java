@@ -324,11 +324,28 @@ public class ManuscriptCollector{
  * PraseMimeMessage类测试
  */
 
+ public static boolean isSubjectContainsKeywords(String subject,String keywords)
+ {
+	 boolean isFound=false;
+	 String [] m_keyword_array=keywords.split(",");
+	 for(int i=0;i<m_keyword_array.length;i++)
+	 {
+		 if(subject.contains(m_keyword_array[i]))
+		 {
+//			 bizlogger.info(subject+"contains"+m_keyword_array[i]);
+			 return true;
+		 }
+			 
+	 }
+	 return isFound;
+ }
  public static void main(String args[])throws Exception{
 	 
-		Properties   props   =  new  Properties();
+		Properties   props   =  new  Properties(),
+				timeprop   =  new  Properties();
 		try {
 			props.load(new FileInputStream("cfg/config.properties"));
+			timeprop.load(new FileInputStream("cfg/time.properties"));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -337,7 +354,7 @@ public class ManuscriptCollector{
 			e.printStackTrace();
 		}	
 	       
-		  if(props.isEmpty())
+		  if(props.isEmpty()||timeprop.isEmpty())
 		  {
 		   return;
 		  }
@@ -346,11 +363,12 @@ public class ManuscriptCollector{
   String mail_send_host = props.get("mail_send_host").toString();
   String mail_username = props.get("mail_username").toString();
   String mail_password = props.get("mail_password").toString();
-  String last_max_time = props.get("last_max_time").toString();
+  String last_max_time = timeprop.get("last_max_time").toString();
   String email_black_list = props.get("email_black_list").toString();
   String my_mail_address = props.get("my_mail_address").toString();
   String auto_reply = props.get("auto_reply").toString();
   String no_auto_reply_list = props.get("no_auto_reply_list").toString();
+  String no_auto_reply_subject_keyword = new String(props.getProperty("no_auto_reply_subject_keyword").getBytes("ISO-8859-1"),"utf-8");
  
   PropertyConfigurator.configure( "cfg/log4j.properties" );
   syslogger  =  Logger.getLogger("SysLog");
@@ -364,6 +382,7 @@ public class ManuscriptCollector{
   syslogger.info("my_mail_address:"+my_mail_address);
   syslogger.info("auto_reply:"+auto_reply);
   syslogger.info("no_auto_reply_list:"+no_auto_reply_list);
+  syslogger.info("no_auto_reply_subject_keyword:"+no_auto_reply_subject_keyword);
   
   Properties props2 = new Properties();
   props2.put("mail.smtp.host", mail_send_host);
@@ -404,6 +423,15 @@ public class ManuscriptCollector{
   
   System.out.print("Task Progress:");
   for(int i=0;i<message.length;i++){
+	  if(store.isConnected()==false)
+		  {
+		  	bizlogger.error("与邮件服务器连接丢失，重新轮询!");
+		    store.connect(mail_receive_host, mail_username, mail_password);
+		    folder = store.getFolder("INBOX");
+		    folder.open(Folder.READ_WRITE);
+		    message = folder.getMessages();
+		    i=0;
+		  }
 	  int i_progress=(i+1)*100/len_message;
 	  System.out.print(i_progress+"%");
 	  for(int j=0;j<=String.valueOf(i_progress).length();j++)
@@ -440,7 +468,7 @@ public class ManuscriptCollector{
 		  String [] m_subject_array=m_subject.split("\\*");
 		  if(m_subject_array.length <5)
 		  {
-			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错,记入需要人工核对邮件列表,跳过...");
+			  bizlogger.error("第["+(i+1)+"]封邮件主题解析出错(length<5),记入需要人工核对邮件列表,跳过...");
 			  if(m_wordexcelprocessor.OpenExcel2()==false)
 			  {
 				  System.out.println("fileout/其他邮件登记.xls存在问题，请检查是否处于打开状态.");
@@ -477,9 +505,9 @@ public class ManuscriptCollector{
 			   // 发送邮件
 			   Transport transport2 = session.getTransport("smtp");
 			   // 连接服务器的邮箱
-//			   transport2.connect(mail_send_host, mail_username, mail_password);
+			   transport2.connect(mail_send_host, mail_username, mail_password);
 			   // 把邮件发送出去
-//			   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
+			   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
 			   transport2.close();
 			     } catch (Exception e) {
 			   e.printStackTrace();
@@ -512,6 +540,14 @@ public class ManuscriptCollector{
 			  bizlogger.error("fileout/来稿登记.xls存在问题，请检查是否处于打开状态.");
 			  return;
 		  }
+		  
+		  boolean isFoundRptArticle=m_wordexcelprocessor.SearchRepeatArticle(m_name, m_title);
+		  if(isFoundRptArticle)
+		  {
+			  bizlogger.info("作者:"+m_name+",篇名:《"+m_title+"》存在重复记录,跳过...");
+			  m_wordexcelprocessor.CloseExcel();
+			  continue;
+		  }
 		  int index_number=m_wordexcelprocessor.ProcessExcel(m_sentdate.substring(0,10), m_name, m_title, m_workplace, m_phone,m_sender );
 		  m_wordexcelprocessor.CloseExcel();
 		  
@@ -529,7 +565,6 @@ public class ManuscriptCollector{
 		  m_wordexcelprocessor.ProcessWord(m_sentdate.substring(0,10), m_name, m_title, m_phone, m_workplace, m_sender, index_number);
 		  pmm.setAttachPath(nameDir.toString());
 		  pmm.saveAttachMent((Part)message[i]);
-		  
 		  try{
 	          FileWriter fw = new FileWriter(nameDir.toString()+"\\邮件正文.html");
 	          pmm.getMailContent((Part)message[i]);
@@ -542,7 +577,7 @@ public class ManuscriptCollector{
 			SimpleDateFormat dateformat1=new SimpleDateFormat("yyyy月MM日dd日");
 			String today=dateformat1.format(new Date());
 			String m_sentdate2=dateformat1.format(pmm.getSentDate2());
-		  m_wordexcelprocessor.ProcessReplyWord(m_sentdate.substring(0,10),m_sentdate2, m_name, m_title, today);
+			m_wordexcelprocessor.ProcessReplyWord(m_sentdate.substring(0,10),m_sentdate2, m_name, m_title, today,Integer.toString(index_number));
 		  
 		  if(auto_reply.compareTo("yes")==0){
 		  bizlogger.info("开始向["+m_sender+"]发送反馈邮件");
@@ -553,13 +588,13 @@ public class ManuscriptCollector{
 		   // 加载收件人地址
 			  sendmessage.addRecipients(Message.RecipientType.TO, m_sender);
 		   // 加载标题
-			  sendmessage.setSubject("收稿反馈");
+			  sendmessage.setSubject("您的稿件《"+m_title+"》已收到，登记号为："+Integer.toString(index_number)+"，请勿重复投稿!");
 		   // 向multipart对象中添加邮件的各个部分内容，包括文本内容和附件
 		   Multipart multipart = new MimeMultipart();
 
 		   // 设置邮件的文本内容
 		   BodyPart contentPart = new MimeBodyPart();
-		   contentPart.setText("您的稿件已收到，请勿重复投稿!\r\n此邮件为系统自动发送,请勿回复!\n感谢您的配合！");
+		   contentPart.setText("您的稿件《"+m_title+"》已收到，登记号为："+Integer.toString(index_number)+"，请勿重复投稿!\r\n此邮件为系统自动发送,请勿回复!\n感谢您的配合！");
 		   multipart.addBodyPart(contentPart);
 		   
 		   // 将multipart对象放到message中
@@ -574,9 +609,9 @@ public class ManuscriptCollector{
 		   // 发送邮件
 		   Transport transport = session.getTransport("smtp");
 		   // 连接服务器的邮箱
-//		   transport.connect(mail_send_host, mail_username, mail_password);
+		   transport.connect(mail_send_host, mail_username, mail_password);
 		   // 把邮件发送出去
-//		   transport.sendMessage(sendmessage, sendmessage.getAllRecipients());
+		   transport.sendMessage(sendmessage, sendmessage.getAllRecipients());
 		   transport.close();
 		     } catch (Exception e) {
 		   e.printStackTrace();
@@ -596,6 +631,12 @@ public class ManuscriptCollector{
 		  }
 		  NeedToNotifyGS= !m_wordexcelprocessor.SearchExcel2(m_sender);
 		  bizlogger.info(m_sender+"在excel2里的登记状态为:"+!NeedToNotifyGS);
+		  if(isSubjectContainsKeywords(m_subject,no_auto_reply_subject_keyword)==true)
+			  {
+				bizlogger.info(m_subject+"属于不用自动回复的主题！");
+			  	NeedToNotifyGS=false;
+			  }
+		  
 		  m_wordexcelprocessor.ProcessExcel2(m_sentdate.substring(0,10),m_sender,m_subject);
 		  m_wordexcelprocessor.CloseExcel2();
 		  
@@ -624,9 +665,9 @@ public class ManuscriptCollector{
 		   // 发送邮件
 		   Transport transport2 = session.getTransport("smtp");
 		   // 连接服务器的邮箱
-//		   transport2.connect(mail_send_host, mail_username, mail_password);
+		   transport2.connect(mail_send_host, mail_username, mail_password);
 		   // 把邮件发送出去
-//		   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
+		   transport2.sendMessage(sendmessage2, sendmessage2.getAllRecipients());
 		   transport2.close();
 		     } catch (Exception e) {
 		   e.printStackTrace();
@@ -639,9 +680,9 @@ public class ManuscriptCollector{
 	  }
   
   
-  props.setProperty("last_max_time", df.format(date_current_max_time));
-//  props.setProperty("last_max_time", "2012-01-01 00:00:00");  
-  props.save(new FileOutputStream("cfg/config.properties"), null);
+  timeprop.setProperty("last_max_time", df.format(date_current_max_time));
+  
+  timeprop.save(new FileOutputStream("cfg/time.properties"), null);
   folder.close(true);
   bizlogger.info("本次邮件处理完毕...");
   System.out.println("\r\nTask Completed!\r\n<press any key to continue>");
